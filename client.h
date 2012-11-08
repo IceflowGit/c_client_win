@@ -39,6 +39,8 @@
 #define TERMINAL_PRINT wprintf
 #define QR_BODY_LEN    64  //定义请求包体长度
 
+#define MAX_EMAIL 128
+
 /*返回信息的结构样式*/
 typedef struct Infor_Struct//员工信息结构体；
 {
@@ -48,7 +50,7 @@ typedef struct Infor_Struct//员工信息结构体；
     char company[32];
     char privation[32];
     char extension[32];
-    char emall[32];
+    char emall[MAX_EMAIL];
 }INFOR;
 
 /*请求包结构*/
