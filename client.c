@@ -22,6 +22,32 @@ char ip[256] = {0};
 int port;
 
 /*
+ *功能：编码转换函数
+ *参数：1.char* szUtf8:需要转换的字符串
+ 2.int nUtf8Len：szUtf8的长度
+ 3.char* szAcp：输出参数，转换后的字符串
+ 4.int nAcpLen：szAcp的长度
+ *返回值：char*--转换后的字符串
+ */
+#define MAXSTR 4096
+#ifdef _MINGW_
+char*  UTF8toACP(char* szUtf8,int nUtf8Len,char* szAcp,int nAcpLen)
+{
+	wchar_t szTmp[MAXSTR] = {0};
+
+	if(!MultiByteToWideChar(CP_UTF8, 0, szUtf8,nUtf8Len,szTmp,MAXSTR))
+		return szAcp;
+
+
+
+	if(!WideCharToMultiByte(CP_ACP, 0,szTmp, -1,szAcp,nAcpLen, NULL, FALSE))
+		return szAcp;
+
+	return szAcp;
+}
+#endif
+
+/*
  *功能：关闭tcp的连接
  *参数：无参
  *返回值：0 -- 正确执行，<0 -- 执行异常
@@ -31,13 +57,13 @@ int tcp_close()
 	int ret = -1;
 
 #ifdef _MINGW_
-	/*
-	   ret = shutdown(sockfd, SHUT_RDWR );
-	   if(ret < 0){
-	   printf("shutdown error\n");
-	   return -1;
-	   }
-	 */
+
+	ret = shutdown(sockfd, SD_BOTH);
+	if(ret < 0){
+		TERMINAL_PRINT(L"shutdown error\n");
+		return -1;
+	}
+
 	ret = closesocket(sockfd);
 	if(ret < 0){
 		TERMINAL_PRINT(L"close fd error\n");
@@ -118,10 +144,16 @@ int Socket_Create(int af,int type,int protocol)
  */
 int unpackage(char* buf, int len)//解析查询结果数据包；
 {
-	QA_HEAD* head = (QA_HEAD*)buf;;
-	INFOR* p = (INFOR*)(buf + sizeof(QA_HEAD));
+	char szAcp_myname[MAXSTR]={0};
+	char szAcp_abbreviation[MAXSTR]={0};
+	char szAcp_full[MAXSTR]={0};
+	char szAcp_company[MAXSTR]={0};
+	char szAcp_privation[MAXSTR]={0};
+	char szAcp_extension[MAXSTR]={0};
+	char szAcp_email[MAXSTR]={0};
 
-	// printf("\n******len %d\n******id %d\n", change_buf->package_len, change_buf->package_id);
+	QA_HEAD* head = (QA_HEAD*)buf;
+	INFOR* p = (INFOR*)(buf + sizeof(QA_HEAD));
 
 	if(head->package_id != 11){
 		TERMINAL_PRINT(L"package_id error\n");
@@ -140,20 +172,40 @@ int unpackage(char* buf, int len)//解析查询结果数据包；
 
 	int i;
 	for(i = 0 ; i < head->infor_num ; i++){
+#ifdef _MINGW_
+		UTF8toACP(p->myname,sizeof(p->myname),szAcp_myname,MAXSTR);
+		UTF8toACP(p->abbreviation,sizeof(p->abbreviation),szAcp_abbreviation,MAXSTR);
+		UTF8toACP(p->full,sizeof(p->full),szAcp_full,MAXSTR);
+		UTF8toACP(p->company,sizeof(p->company),szAcp_company,MAXSTR);
+		UTF8toACP(p->privation,sizeof(p->privation),szAcp_privation,MAXSTR);
+		UTF8toACP(p->extension,sizeof(p->extension),szAcp_extension,MAXSTR);
+		UTF8toACP(p->emall,sizeof(p->emall),szAcp_email,MAXSTR);
 
 		TERMINAL_PRINT(L"你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
-				p->myname,
-				p->abbreviation,
-				p->full,
-				p->company,
-				p->privation,
-				p->extension,
-				p->emall
+				szAcp_myname,
+				szAcp_abbreviation,
+				szAcp_full,
+				szAcp_company,
+				szAcp_privation,
+				szAcp_extension,
+				szAcp_email
 				);
 		p += sizeof(INFOR);
 	};
-
-	return 0;    
+#else
+	TERMINAL_PRINT(L"你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
+			p->myname,
+			p->abbreviation,
+			p->full,
+			p->company,
+			p->privation,
+			p->extension,
+			p->emall
+			);
+	p += sizeof(INFOR);
+};
+#endif
+return 0;    
 }
 
 /*
@@ -414,6 +466,7 @@ int main_loop()
  */
 int main(int argc, char* argv[])
 {
+
 #ifdef _MINGW_
 	setlocale(LC_ALL,"chs");
 #else

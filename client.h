@@ -16,7 +16,9 @@
 #include <locale.h>
 /*条件编译，linux和windows系统可执行程序*/
 #ifdef _MINGW_
+#include<winsock2.h>
 #include <windows.h>
+#include<ws2tcpip.h>
 #else
 #include<event2/event.h>
 #include<event2/bufferevent.h>
@@ -79,4 +81,4 @@ int Socket_Create(int, int, int);
 int Socket_Write(int, char*, int);
 int Socket_Read(int, char*, int);
 int tcp_close();
-
+char* UTF8toACP(char* szUtf8,int nUtf8Len,char* szAcp,int nAcpLen);
