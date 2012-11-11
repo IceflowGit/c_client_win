@@ -47,7 +47,7 @@ int terminal_print(char* msg, ...)
  *返回值：char*--转换后的字符串
  */
 #ifdef _MINGW_
-char*  UTF8toACP(char* szUtf8, char* szAcp, int bufSize)
+char*  UTF8toACP(char* szUtf8, char* szAcp, int nAcpLen)
 {
 	wchar_t szTmp[MAXSTR] = {0};
 
