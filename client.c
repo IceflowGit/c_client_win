@@ -5,12 +5,13 @@
  *
  *修改记录：
  *根据老大的讲解和同事的建议和意见进行了代码整理和修改（2012.10.31）
+ *根据老大现场的讲解修改而来UTF8toACP函数，修改了打印问题（2012.11.9）
  *
  *版本号：v1.0.1
  *
  */
 #include"client.h"
-
+#define MAXSTR 4096
 /*
  *全局的变量：
  *socket：client的套接字描述符
@@ -21,6 +22,22 @@ int sockfd;//连接套接字描述符；
 char ip[256] = {0};
 int port;
 
+int terminal_print(char* msg, ...)
+{	
+	va_list argp;
+	char sTmp[MAXSTR] = {0};
+	char sAcp[MAXSTR] = {0};
+	
+	va_start(argp, msg);
+	vsnprintf(sTmp, MAXSTR, msg, argp);
+	va_end(argp);
+#ifdef _MINGW_
+	printf("%s", UTF8toACP(sTmp, sAcp, MAXSTR));
+#else
+	printf("%s",sTmp );
+#endif
+	return 0;
+}
 /*
  *功能：编码转换函数
  *参数：1.char* szUtf8:需要转换的字符串
@@ -32,13 +49,12 @@ int port;
 #ifdef _MINGW_
 char*  UTF8toACP(char* szUtf8, char* szAcp, int bufSize)
 {
-#define MAXSTR 4096
 	wchar_t szTmp[MAXSTR] = {0};
 
 	if (szAcp == NULL)
 		return NULL;
 
-	if( szUtf8 == NULL || MultiByteToWideChar(0) >= MAXSTR )
+	if( szUtf8 == NULL || MultiByteToWideChar(CP_UTF8, 0, szUtf8, -1, szTmp, 0) >= MAXSTR )
 		szAcp[0]= 0;
 		return szAcp ;
 	}
@@ -46,13 +62,11 @@ char*  UTF8toACP(char* szUtf8, char* szAcp, int bufSize)
 	MultiByteToWideChar(CP_UTF8, 0, szUtf8, -1 ,szTmp, MAXSTR);
 	WideCharToMultiByte(CP_ACP, 0,szTmp, -1, szAcp,nAcpLen, NULL, FALSE);
 
-	szAcp[bufSize] = 0;
+	szAcp[MAXSTR] = 0;
 
 	return szAcp;
-#undef MAXSTR
 }
 #endif
-
 /*
  *功能：关闭tcp的连接
  *参数：无参

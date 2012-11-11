@@ -12,6 +12,7 @@
 #include<stdlib.h>
 #include<errno.h>
 #include<assert.h>
+#include<stdarg.h>
 #include<string.h>
 #include <locale.h>
 /*条件编译，linux和windows系统可执行程序*/
@@ -40,16 +41,22 @@
 #define QR_BODY_LEN    64  //定义请求包体长度
 
 #define MAX_EMAIL 128
+#define MAX_EXTENSION 32
+#define MAX_PRIVATION 32
+#define MAX_COMPANY 32
+#define MAX_FULL 32
+#define MAX_ABBREVIATION 32
+#define MAX_MYNAME 32
 
 /*返回信息的结构样式*/
 typedef struct Infor_Struct//员工信息结构体；
 {
-    char myname[32];
-    char abbreviation[32];
-    char full[32];
-    char company[32];
-    char privation[32];
-    char extension[32];
+    char myname[MAX_MYNAME];
+    char abbreviation[MAX_ABBREVIATION];
+    char full[MAX_FULL];
+    char company[MAX_COMPANY];
+    char privation[MAX_PRIVATION];
+    char extension[MAX_EXTENSION];
     char emall[MAX_EMAIL];
 }INFOR;
 
@@ -83,4 +90,5 @@ int Socket_Create(int, int, int);
 int Socket_Write(int, char*, int);
 int Socket_Read(int, char*, int);
 int tcp_close();
-char* UTF8toACP(char* szUtf8,int nUtf8Len,char* szAcp,int nAcpLen);
+char* UTF8toACP(char* szUtf8,char* szAcp,int nAcpLen);
+int terminal_print(char* msg, ...);
