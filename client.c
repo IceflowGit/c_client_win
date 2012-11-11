@@ -54,7 +54,7 @@ char*  UTF8toACP(char* szUtf8, char* szAcp, int nAcpLen)
 	if (szAcp == NULL)
 		return NULL;
 
-	if( szUtf8 == NULL || MultiByteToWideChar(CP_UTF8, 0, szUtf8, -1, szTmp, 0) >= MAXSTR )
+	if( szUtf8 == NULL || MultiByteToWideChar(CP_UTF8, 0, szUtf8, -1, szTmp, 0) >= MAXSTR ){
 		szAcp[0]= 0;
 		return szAcp ;
 	}
@@ -80,24 +80,24 @@ int tcp_close()
 
 	ret = shutdown(sockfd, SD_BOTH);
 	if(ret < 0){
-		TERMINAL_PRINT(L"shutdown error\n");
+		terminal_print("shutdown error\n");
 		return -1;
 	}
 
 	ret = closesocket(sockfd);
 	if(ret < 0){
-		TERMINAL_PRINT(L"close fd error\n");
+		terminal_print("close fd error\n");
 		return -2;
 	}
 #else
 	ret = shutdown(sockfd, SHUT_RDWR );
 	if(ret < 0){
-		TERMINAL_PRINT(L"shutdown error\n");
+		terminal_print("shutdown error\n");
 		return -1;
 	}
 	ret = close(sockfd);
 	if(ret < 0){
-		TERMINAL_PRINT(L"close fd error\n");
+		terminal_print("close fd error\n");
 		return -2;
 	}
 #endif
@@ -164,6 +164,7 @@ int Socket_Create(int af,int type,int protocol)
  */
 int unpackage(char* buf, int len)//解析查询结果数据包；
 {
+/*
 	char szAcp_myname[64]={0};
 	char szAcp_abbreviation[MAXSTR]={0};
 	char szAcp_full[MAXSTR]={0};
@@ -171,29 +172,30 @@ int unpackage(char* buf, int len)//解析查询结果数据包；
 	char szAcp_privation[MAXSTR]={0};
 	char szAcp_extension[MAXSTR]={0};
 	char szAcp_email[MAX_EMAIL]={0};
-
+*/
 	QA_HEAD* head = (QA_HEAD*)buf;
 	INFOR* p = (INFOR*)(buf + sizeof(QA_HEAD));
 
 	if(head->package_id != 11){
-		TERMINAL_PRINT(L"package_id error\n");
+		terminal_print("package_id error\n");
 		return -1;
 	}
 
 	if(head->infor_num == 0){
-		TERMINAL_PRINT(L"你要查询的信息不存在！\n");
+		terminal_print("你要查询的信息不存在！\n");
 		return 0;
 	}
 
 	if(len != (int)(sizeof(QA_HEAD) +  head->infor_num * sizeof(INFOR)) || len != head->package_len){
-		TERMINAL_PRINT(L"包长度错误\n");
+		terminal_print("包长度错误\n");
 		return -2;
 	}
 
 	int i;
 	for(i = 0 ; i < head->infor_num ; i++){
+/*
 #ifdef _MINGW_
-		TERMINAL_PRINT(L"你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
+		terminal_print("你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
 			UTF8toACP(p->myname,szAcp_myname,sizeof(szAcp_myname)),
 				szAcp_abbreviation,
 				szAcp_full,
@@ -205,7 +207,8 @@ int unpackage(char* buf, int len)//解析查询结果数据包；
 		p += sizeof(INFOR);
 	};
 #else
-	TERMINAL_PRINT(L"你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
+*/
+	terminal_print("你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
 			p->myname,
 			p->abbreviation,
 			p->full,
@@ -216,7 +219,7 @@ int unpackage(char* buf, int len)//解析查询结果数据包；
 			);
 	p += sizeof(INFOR);
 };
-#endif
+//#endif
 return 0;    
 }
 
@@ -235,7 +238,7 @@ int read_ser(char* buf, int buf_len)//读数据的函数；
 	do{
 		ret = Socket_Read(sockfd, buf+len, buf_len - len - 1);
 		if( ret < 0 ) {
-			TERMINAL_PRINT(L"socket读错误\n");
+			terminal_print("socket读错误\n");
 			return -1;
 		}
 
@@ -243,21 +246,21 @@ int read_ser(char* buf, int buf_len)//读数据的函数；
 
 		if ( len == sizeof(buf) - 1) 
 		{
-			TERMINAL_PRINT(L"socket返回包太长\n");
+			terminal_print("socket返回包太长\n");
 			return -2;
 		}
 	}while( ret != 0 );
 	if(len == 0){
-		TERMINAL_PRINT(L"server end\n");
+		terminal_print("server end\n");
 		return -3;
 	}
 	if(len < (int)sizeof(QA_HEAD)){
-		TERMINAL_PRINT(L"socket返回包太短\n");
+		terminal_print("socket返回包太短\n");
 		return -4;
 	}
 
 	if(len != head->package_len) {
-		TERMINAL_PRINT(L"返回包长度错误\n");
+		terminal_print("返回包长度错误\n");
 		return -5;
 	}
 
@@ -275,11 +278,11 @@ int write_ser(char* buf, int buf_len)//写数据的函数；
 	int len = 0;
 
 	if(buf == NULL){
-		TERMINAL_PRINT(L"write_ser buf is NULL\n");
+		terminal_print("write_ser buf is NULL\n");
 		return -1;		
 	}
 	if(buf_len != QR_BODY_LEN + sizeof(QR_HEAD)){
-		TERMINAL_PRINT(L"write_ser buf_len error\n");
+		terminal_print("write_ser buf_len error\n");
 		return -2;
 	}
 
@@ -287,7 +290,7 @@ int write_ser(char* buf, int buf_len)//写数据的函数；
 		int ret = -1;
 		ret = Socket_Write(sockfd, buf + len, buf_len - len);//把标准输入的数据写入到套接字里面；
 		if(ret < 0) {
-			TERMINAL_PRINT(L"write_ser write error\n");
+			terminal_print("write_ser write error\n");
 			return -3;
 		}
 
@@ -312,12 +315,12 @@ int write_ser(char* buf, int buf_len)//写数据的函数；
 int	build_package(char* buf, int buf_len)
 {
 	if(buf == NULL){
-		TERMINAL_PRINT(L"build_package buf is NULL\n");
+		terminal_print("build_package buf is NULL\n");
 		return -1;	
 	}
 
 	if(buf_len != QR_BODY_LEN + sizeof(QR_HEAD)) {
-		TERMINAL_PRINT(L"build_pack buf_len error\n");
+		terminal_print("build_pack buf_len error\n");
 		return -2;
 	}
 
@@ -339,19 +342,19 @@ int read_stdin(char*data, int len)
 {
 	int ret = -1;
 
-	TERMINAL_PRINT(L"查找支持：中文名、简拼、全拼、公司手机号、私人号码、分机号、邮箱！\n退出系统请输入：quit\n");
-	TERMINAL_PRINT(L"input message:");
+	terminal_print("查找支持：中文名、简拼、全拼、公司手机号、私人号码、分机号、邮箱！\n退出系统请输入：quit\n");
+	terminal_print("input message:");
 	fflush(stdout);
 	fflush(stdin);
 
 	ret = read(0, data, len-1);//从标准输入中读取数据；
 	if(ret < 0){   
-		TERMINAL_PRINT(L"read_stdin read error\n");
+		terminal_print("read_stdin read error\n");
 		return ret;
 	}
 
 	if(strncmp(data, "quit", sizeof("quit")-1)==0){
-		TERMINAL_PRINT(L"quit 退出命令\n");
+		terminal_print("quit 退出命令\n");
 		return 0;
 	}
 	fflush(stdout);
@@ -389,7 +392,7 @@ int tcp_init()
 
 	sockfd = Socket_Create(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < -1){
-		TERMINAL_PRINT(L"socket error\n");
+		terminal_print("socket error\n");
 		return -1;
 	}	
 	//IPv4地址族结构；
@@ -402,10 +405,10 @@ int tcp_init()
 
 	ret = connect(sockfd, (struct sockaddr*)&seraddr, sizeof(seraddr));//连接；
 	if(ret < 0){
-		TERMINAL_PRINT(L"connect error\n");
+		terminal_print("connect error\n");
 		return -2;
 	}
-	TERMINAL_PRINT(L"与服务器连接成功！\n");
+	terminal_print("与服务器连接成功！\n");
 
 	return 0;
 }
@@ -493,7 +496,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	if(strlen(argv[1]) > sizeof(ip)){
-		TERMINAL_PRINT(L"IP length error\n");
+		terminal_print("IP length error\n");
 		return -2;
 	}	
 
