@@ -6,6 +6,7 @@
  *修改记录：
  *根据老大的讲解和同事的建议和意见进行了代码整理和修改（2012.10.31）
  *根据老大现场的讲解修改而来UTF8toACP函数，修改了打印问题（2012.11.9）
+ *程序修改完毕，调整了所有的打印函数（2012.11.11）
  *
  *版本号：v1.0.1
  *
@@ -22,21 +23,27 @@ int sockfd;//连接套接字描述符；
 char ip[256] = {0};
 int port;
 
+/*
+ *功能：封装函数，解决跨平台打印问题
+ *参数：无固定参数
+ *返回值：打印的字符串长度
+ */
 int terminal_print(char* msg, ...)
 {	
+	int ret = -1;
 	va_list argp;
 	char sTmp[MAXSTR] = {0};
 	char sAcp[MAXSTR] = {0};
-	
+
 	va_start(argp, msg);
 	vsnprintf(sTmp, MAXSTR, msg, argp);
 	va_end(argp);
 #ifdef _MINGW_
-	printf("%s", UTF8toACP(sTmp, sAcp, MAXSTR));
+	ret = printf("%s", UTF8toACP(sTmp, sAcp, MAXSTR));
 #else
-	printf("%s",sTmp );
+	ret = printf("%s",sTmp );
 #endif
-	return 0;
+	return ret;
 }
 /*
  *功能：编码转换函数
@@ -164,15 +171,6 @@ int Socket_Create(int af,int type,int protocol)
  */
 int unpackage(char* buf, int len)//解析查询结果数据包；
 {
-/*
-	char szAcp_myname[64]={0};
-	char szAcp_abbreviation[MAXSTR]={0};
-	char szAcp_full[MAXSTR]={0};
-	char szAcp_company[MAXSTR]={0};
-	char szAcp_privation[MAXSTR]={0};
-	char szAcp_extension[MAXSTR]={0};
-	char szAcp_email[MAX_EMAIL]={0};
-*/
 	QA_HEAD* head = (QA_HEAD*)buf;
 	INFOR* p = (INFOR*)(buf + sizeof(QA_HEAD));
 
@@ -193,34 +191,18 @@ int unpackage(char* buf, int len)//解析查询结果数据包；
 
 	int i;
 	for(i = 0 ; i < head->infor_num ; i++){
-/*
-#ifdef _MINGW_
 		terminal_print("你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
-			UTF8toACP(p->myname,szAcp_myname,sizeof(szAcp_myname)),
-				szAcp_abbreviation,
-				szAcp_full,
-				szAcp_company,
-				szAcp_privation,
-				szAcp_extension,
-				szAcp_email
+				p->myname,
+				p->abbreviation,
+				p->full,
+				p->company,
+				p->privation,
+				p->extension,
+				p->emall
 				);
 		p += sizeof(INFOR);
 	};
-#else
-*/
-	terminal_print("你要查询的信息如下:\n姓名：%s\n简拼：%s\n全拼：%s\n公司电话：%s\n私人电话：%s\n分机号：%s\nEmail：%s\n",
-			p->myname,
-			p->abbreviation,
-			p->full,
-			p->company,
-			p->privation,
-			p->extension,
-			p->emall
-			);
-	p += sizeof(INFOR);
-};
-//#endif
-return 0;    
+	return 0;    
 }
 
 /*

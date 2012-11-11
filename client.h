@@ -40,7 +40,7 @@
 #define TERMINAL_PRINT wprintf
 #define QR_BODY_LEN    64  //定义请求包体长度
 
-#define MAX_EMAIL 128
+#define MAX_EMAIL 32
 #define MAX_EXTENSION 32
 #define MAX_PRIVATION 32
 #define MAX_COMPANY 32
