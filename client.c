@@ -7,6 +7,7 @@
  *根据老大的讲解和同事的建议和意见进行了代码整理和修改（2012.10.31）
  *根据老大现场的讲解修改而来UTF8toACP函数，修改了打印问题（2012.11.9）
  *程序修改完毕，调整了所有的打印函数（2012.11.11）
+ *程序修改了Wall警告（2012.11.12）
  *
  *版本号：v1.0.1
  *
@@ -33,12 +34,12 @@ int terminal_print(char* msg, ...)
 	int ret = -1;
 	va_list argp;
 	char sTmp[MAXSTR] = {0};
-	char sAcp[MAXSTR] = {0};
 
 	va_start(argp, msg);
 	vsnprintf(sTmp, MAXSTR, msg, argp);
 	va_end(argp);
 #ifdef _MINGW_
+	char sAcp[MAXSTR] = {0};
 	ret = printf("%s", UTF8toACP(sTmp, sAcp, MAXSTR));
 #else
 	ret = printf("%s",sTmp );
@@ -328,13 +329,14 @@ int read_stdin(char*data, int len)
 	terminal_print("input message:");
 	fflush(stdout);
 	fflush(stdin);
-
+/*
 	ret = read(0, data, len-1);//从标准输入中读取数据；
 	if(ret < 0){   
 		terminal_print("read_stdin read error\n");
 		return ret;
 	}
-
+*/
+	scanf("%63s", data);
 	if(strncmp(data, "quit", sizeof("quit")-1)==0){
 		terminal_print("quit 退出命令\n");
 		return 0;
