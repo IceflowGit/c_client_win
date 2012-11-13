@@ -5,6 +5,7 @@
 *
 *修改记录：
 *根据老大的讲解和同事的建议和意见进行了代码整理和就该（2012.11.1）
+*修改了显示格式混乱问题（2012.11.12）
 *
 *版本号：v1.0.1
 */
@@ -21,13 +22,11 @@
 #include <windows.h>
 #include<ws2tcpip.h>
 #else
-#include<event2/event.h>
-#include<event2/bufferevent.h>
-#include<mysql/mysql.h>
 #include<time.h>
 #include<netinet/in.h>
 #include<sys/types.h>
 #include<sys/socket.h>
+#include<arpa/inet.h>
 #include<pthread.h>
 #include<sys/types.h>
 #include<unistd.h>
